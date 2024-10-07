@@ -1,23 +1,25 @@
-# IntelliJ IDEA
-.idea/
-*.iml
+# eclipse
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+
+# idea
+out
 *.ipr
 *.iws
+*.iml
+.idea
 
-# Gradle files
-.gradle/
-build/
-out/
-*.jar
-*.war
-*.ear
-*.class
+# gradle
+build
+.gradle
 
-# Logs
-logs/
-*.log
+# other
+eclipse
+run
 
-
-# Minecraft specific files
-run/
-out/
+# Files from Forge MDK
+forge*changelog.txt
