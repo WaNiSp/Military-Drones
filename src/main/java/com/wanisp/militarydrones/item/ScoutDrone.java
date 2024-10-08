@@ -1,16 +1,22 @@
 package com.wanisp.militarydrones.item;
 
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Pose;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import com.gluecode.fpvdrone.a.b;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 
 public class ScoutDrone extends Item {
     private static final double MAX_DISTANCE = 150.0;
@@ -69,7 +75,7 @@ public class ScoutDrone extends Item {
         p_77659_2_.getCooldownTracker().setCooldown(this, 30);
 
         // If there's no tag
-        if(!itemStack.hasTag()) {
+        if (!itemStack.hasTag()) {
             itemStack.setTag(new CompoundNBT());
 
             // Create own health for drone
@@ -78,16 +84,15 @@ public class ScoutDrone extends Item {
         }
 
 
-
         // Get tag
         CompoundNBT tag = itemStack.getTag();
 
-        if(tag.getBoolean("flying")) {
+        if (tag.getBoolean("flying")) {
             // Get position
             Vector3d pos = getPosition(tag);
 
             // Check how far drone from player
-            if(!checkDistance(p_77659_2_.getPositionVec(), new Vector3d(pos.x, pos.y ,pos.z))){
+            if (!checkDistance(p_77659_2_.getPositionVec(), new Vector3d(pos.x, pos.y, pos.z))) {
                 sendMessage(p_77659_2_, "message.militarydrones.drone_distance");
                 return super.onItemRightClick(p_77659_1_, p_77659_2_, p_77659_3_);
             }
@@ -97,20 +102,27 @@ public class ScoutDrone extends Item {
             // Get player health back and set drone health
             changeHealthOnPlayer(tag, p_77659_2_);
 
+            // Give the player resistance so he doesn't die
+            p_77659_2_.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
+
             // Get rotation
             float pitch = tag.getFloat("pitch");
             float yaw = tag.getFloat("yaw");
 
+
             // Get player back
-            p_77659_2_.setPosition(pos.x + 0.5f, pos.y, pos.z);
+            p_77659_2_.setPosition(pos.x + 0.5, pos.y, pos.z);
             p_77659_2_.rotationPitch = pitch;
             p_77659_2_.rotationYaw = yaw;
 
             // Disable drone mode
             b.v = false;
             b.d();
-        }
-        else {
+
+            // FPV mod has a bag with eye height and size and this is fix for it
+            p_77659_2_.recalculateSize();
+
+        } else {
             tag.putBoolean("flying", true);
 
             // Save position and rotation
