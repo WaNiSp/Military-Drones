@@ -1,10 +1,8 @@
 package com.wanisp.militarydrones.item;
 
 import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -16,9 +14,13 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
 import com.gluecode.fpvdrone.a.b;
-import net.minecraftforge.event.entity.player.PlayerEvent;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ScoutDrone extends Item {
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static final double MAX_DISTANCE = 150.0;
 
     public ScoutDrone(Properties properties) {
@@ -119,8 +121,11 @@ public class ScoutDrone extends Item {
             b.v = false;
             b.d();
 
-            // FPV mod has a bag with eye height and size and this is fix for it
-            p_77659_2_.recalculateSize();
+            // FPV mod has a bag with eye height and this is fix for it
+            scheduler.schedule(() -> {
+                p_77659_2_.setPose(Pose.STANDING);
+                p_77659_2_.recalculateSize();
+            }, 250, TimeUnit.MILLISECONDS);
 
         } else {
             tag.putBoolean("flying", true);

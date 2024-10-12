@@ -8,12 +8,19 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 @Mod.EventBusSubscriber(modid = "militarydrones")
 public class PlayerEventHandler {
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
@@ -24,7 +31,10 @@ public class PlayerEventHandler {
             if (itemStack.getItem() instanceof ScoutDrone) {
                 CompoundNBT tag = itemStack.getTag();
 
-                if (tag != null) {
+                if (tag != null && tag.getBoolean("flying")) {
+                    // Cancel death
+                    event.setCanceled(true);
+
                     // Return player health
                     player.setHealth(tag.getFloat("playerHealth"));
 
@@ -40,9 +50,9 @@ public class PlayerEventHandler {
                     double z = tag.getDouble("z");
 
                     // Teleport and rotate player
-                    //player.setPositionAndUpdate(x + 0.5, y, z);
-                    //player.rotationPitch = pitch;
-                    //player.rotationYaw = yaw;
+                    player.setPositionAndUpdate(x + 0.5, y, z);
+                    player.rotationPitch = pitch;
+                    player.rotationYaw = yaw;
 
                     // Delete drone from inventory
                     itemStack.shrink(1);
@@ -52,10 +62,10 @@ public class PlayerEventHandler {
                     b.d();
 
                     // FPV mod has a bag with eye height and this is fix for it
-                    player.recalculateSize();
-
-                    // Cancel death
-                    event.setCanceled(true);
+                    scheduler.schedule(() -> {
+                        player.setPose(Pose.STANDING);
+                        player.recalculateSize();
+                    }, 500, TimeUnit.MILLISECONDS);
                 }
             }
         }
