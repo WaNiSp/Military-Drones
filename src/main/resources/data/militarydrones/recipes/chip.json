@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "OSO",
+    "GGG"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:redstone"
+    },
+    "G": {
+      "item": "minecraft:iron_ingot"
+    },
+    "O": {
+      "item": "minecraft:redstone_torch"
+    }
+  },
+  "result": {
+    "item": "militarydrones:chip"
+  }
+}

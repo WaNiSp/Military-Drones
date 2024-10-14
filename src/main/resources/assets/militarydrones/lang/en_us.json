@@ -1,4 +1,6 @@
 {
   "item.militarydrones.scout_drone": "Scout Drone",
+  "item.militarydrones.kamikaze_drone": "Kamikaze Drone",
+  "item.militarydrones.chip": "Chip",
   "message.militarydrones.drone_distance": "You're too far away"
 }

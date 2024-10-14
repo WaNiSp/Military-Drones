@@ -15,6 +15,12 @@ public class ModItems {
     public static final RegistryObject<Item> SCOUT_DRONE = ITEMS.register("scout_drone",
             () -> new ScoutDrone(new Item.Properties().group(ItemGroup.COMBAT).maxStackSize(1)));
 
+    public static final RegistryObject<Item> KAMIKAZE_DRONE = ITEMS.register("kamikaze_drone",
+            () -> new KamikazeDrone(new Item.Properties().group(ItemGroup.COMBAT).maxStackSize(1)));
+
+    public static final RegistryObject<Item> CHIP = ITEMS.register("chip",
+            () -> new Item(new Item.Properties().group(ItemGroup.COMBAT).maxStackSize(1)));
+
     public static void register(IEventBus eventBus) {
         ITEMS.register(eventBus);
     }

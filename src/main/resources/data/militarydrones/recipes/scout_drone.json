@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GGG",
+    "OSO",
+    "GGG"
+  ],
+  "key": {
+    "S": {
+      "item": "militarydrones:chip"
+    },
+    "G": {
+      "item": "minecraft:iron_ingot"
+    },
+    "O": {
+      "item": "minecraft:glass"
+    }
+  },
+  "result": {
+    "item": "militarydrones:scout_drone"
+  }
+}
