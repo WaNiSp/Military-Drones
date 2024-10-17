@@ -2,6 +2,7 @@ package com.wanisp.militarydrones;
 
 import com.gluecode.fpvdrone.Main;
 import com.wanisp.militarydrones.item.ModItems;
+import com.wanisp.militarydrones.packet.PacketHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraftforge.common.MinecraftForge;
@@ -33,6 +34,7 @@ public class MilitaryDronesMod
     public MilitaryDronesMod() {
         IEventBus eventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.register(eventBus);
+        PacketHandler.register();
         
         // Register the setup method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);

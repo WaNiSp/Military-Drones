@@ -1,10 +1,14 @@
 package com.wanisp.militarydrones.item;
 
 import com.gluecode.fpvdrone.a.b;
+import com.wanisp.militarydrones.packet.DroneModePacket;
+import com.wanisp.militarydrones.packet.PacketHandler;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.item.EnderPearlItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -15,6 +19,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -73,7 +78,6 @@ public class Drone extends Item {
     public ActionResult<ItemStack> onItemRightClick(World p_77659_1_, PlayerEntity p_77659_2_, Hand p_77659_3_) {
 
         ItemStack itemStack = p_77659_2_.getHeldItem(p_77659_3_);
-
         p_77659_2_.getCooldownTracker().setCooldown(this, 30);
 
         // If there's no tag
@@ -101,30 +105,30 @@ public class Drone extends Item {
 
             tag.putBoolean("flying", false);
 
-            // Get player health back and set drone health
-            changeHealthOnPlayer(tag, p_77659_2_);
-
-            // Give the player resistance so he doesn't die
-            p_77659_2_.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
-
             // Get rotation
             float pitch = tag.getFloat("pitch");
             float yaw = tag.getFloat("yaw");
 
-            // Get player back
-            p_77659_2_.setPosition(pos.x + 0.5, pos.y, pos.z);
-            p_77659_2_.rotationPitch = pitch;
-            p_77659_2_.rotationYaw = yaw;
+            // Only server's actions
+            if (!p_77659_1_.isRemote) {
+                // Get player health back and set drone health and give resistance so he doesn't die
+                changeHealthOnPlayer(tag, p_77659_2_);
+                p_77659_2_.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
 
-            // Disable drone mode
-            b.v = false;
-            b.d();
+                // Get player back
+                p_77659_2_.setPosition(pos.x + 0.5, pos.y, pos.z);
+                p_77659_2_.rotationPitch = pitch;
+                p_77659_2_.rotationYaw = yaw;
 
-            // FPV mod has a bag with eye height and this is fix for it
-            scheduler.schedule(() -> {
-                p_77659_2_.setPose(Pose.STANDING);
-                p_77659_2_.recalculateSize();
-            }, 250, TimeUnit.MILLISECONDS);
+                scheduler.schedule(() -> {
+                    p_77659_2_.setPose(Pose.STANDING);
+                    p_77659_2_.recalculateSize();
+                }, 250, TimeUnit.MILLISECONDS);
+            }
+            else{
+                b.v = false;
+                b.d();
+            }
 
         } else {
             tag.putBoolean("flying", true);
@@ -132,14 +136,16 @@ public class Drone extends Item {
             // Save position and rotation
             savePositionAndRotation(tag, p_77659_2_.getPositionVec(), p_77659_2_.rotationPitch, p_77659_2_.rotationYaw);
 
-            // Get drone health and set player health
-            changeHealthOnDrone(tag, p_77659_2_);
-
-            // Enable drone mode
-            b.v = true;
-            b.d();
+            // Only server's actions
+            if (!p_77659_1_.isRemote) {
+                // Get drone health and set player health
+                changeHealthOnDrone(tag, p_77659_2_);
+            }
+            else{
+                b.v = true;
+                b.d();
+            }
         }
-
         return super.onItemRightClick(p_77659_1_, p_77659_2_, p_77659_3_);
     }
 }
