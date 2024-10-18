@@ -1,8 +1,10 @@
 package com.wanisp.militarydrones.event;
 
+import com.wanisp.militarydrones.client.DroneOverlayRenderer;
 import com.wanisp.militarydrones.item.Drone;
 import com.wanisp.militarydrones.item.KamikazeDrone;
 import com.wanisp.militarydrones.packet.DroneModePacket;
+import com.wanisp.militarydrones.packet.DroneOverlayPacket;
 import com.wanisp.militarydrones.packet.PacketHandler;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.item.TNTEntity;
@@ -32,6 +34,7 @@ public class PlayerEventHandler {
 
     private static void getPlayerBack(PlayerEntity player, CompoundNBT tag, ItemStack itemStack, int delay, boolean isKamikaze){
         if(!player.world.isRemote){
+
 
             // Send packet to player to off drone mode
             if (player instanceof ServerPlayerEntity) {
@@ -95,37 +98,38 @@ public class PlayerEventHandler {
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         // Get player and item stack
-        ItemStack itemStack = event.player.getHeldItemMainhand();
+        PlayerEntity player = event.player;
+        ItemStack itemStack = player.getHeldItemMainhand();
 
-        // Get item and check if it's our kamikaze drone in fly mode
-        if (itemStack.getItem() instanceof KamikazeDrone) {
-            CompoundNBT tag = itemStack.getTag();
-            if (tag != null && tag.getBoolean("flying")) {
+        if (itemStack.isEmpty() || !(itemStack.getItem() instanceof KamikazeDrone)) {
+            return;
+        }
 
-                // Get hit box and grow him
-                PlayerEntity player = event.player;
-                Vector3d motion = player.getMotion();
+        // Check tag and are we flying
+        CompoundNBT tag = itemStack.getTag();
+        if (tag == null || !tag.getBoolean("flying")) {
+            return;
+        }
 
-                // If we're not collision very slow
-                if (motion.lengthSquared() > 0.1D) {
+        // Get motion and check him
+        Vector3d motion = player.getMotion();
 
-                    // Get start and end pos
-                    Vector3d startPos = player.getPositionVec();
-                    Vector3d endPos = startPos.add(motion);
+        if (motion.lengthSquared() <= 0.1D) {
+            return;
+        }
 
-                    // Create raytrace for checking collision
-                    World world = player.world;
-                    RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(
-                            startPos, endPos, RayTraceContext.BlockMode.COLLIDER,
-                            RayTraceContext.FluidMode.NONE, player));
+        // Ray cast
+        Vector3d startPos = player.getPositionVec();
+        Vector3d endPos = startPos.add(motion);
 
-                    // Check if there is collision
-                    if (result.getType() == RayTraceResult.Type.BLOCK) {
-                        // There's collision get player back
-                        getPlayerBack(player, tag, itemStack, 250, true);
-                    }
-                }
-            }
+        World world = player.world;
+        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(
+                startPos, endPos, RayTraceContext.BlockMode.COLLIDER,
+                RayTraceContext.FluidMode.NONE, player));
+
+        if (result.getType() == RayTraceResult.Type.BLOCK) {
+            //DroneOverlayRenderer.activateOverlay();
+            getPlayerBack(player, tag, itemStack, 250, true);
         }
     }
 }

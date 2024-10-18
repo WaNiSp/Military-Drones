@@ -21,5 +21,11 @@ public class PacketHandler {
                 .decoder(DroneModePacket::new)
                 .consumer(DroneModePacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(DroneOverlayPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DroneOverlayPacket::toBytes)
+                .decoder(DroneOverlayPacket::new)
+                .consumer(DroneOverlayPacket::handle)
+                .add();
     }
 }

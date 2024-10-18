@@ -134,6 +134,7 @@ public class Drone extends Item {
                 b.d();
             }
         }
+
         return super.onItemRightClick(p_77659_1_, p_77659_2_, p_77659_3_);
     }
 }
