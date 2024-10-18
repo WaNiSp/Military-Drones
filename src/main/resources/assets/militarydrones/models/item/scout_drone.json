@@ -1,6 +1,6 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "militarydrones:item/base_drone"
+    "layer0": "militarydrones:item/scout_drone"
   }
 }

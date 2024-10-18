@@ -1,6 +1,5 @@
 package com.wanisp.militarydrones.event;
 
-import com.gluecode.fpvdrone.a.b;
 import com.wanisp.militarydrones.item.Drone;
 import com.wanisp.militarydrones.item.KamikazeDrone;
 import com.wanisp.militarydrones.packet.DroneModePacket;
@@ -13,7 +12,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.RayTraceContext;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
@@ -49,33 +49,26 @@ public class PlayerEventHandler {
                 player.world.addEntity(tnt);
             }
 
-            // Return player health
-            player.setHealth(tag.getFloat("playerHealth"));
 
             // Give the player resistance so he doesn't die
             player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
 
-            // Get saved position and rotation
-            float pitch = tag.getFloat("pitch");
-            float yaw = tag.getFloat("yaw");
-
-            double x = tag.getDouble("x");
-            double y = tag.getDouble("y");
-            double z = tag.getDouble("z");
+            // Return player health
+            player.setHealth(tag.getFloat("playerHealth"));
 
             // Teleport and rotate player
-            player.setPositionAndUpdate(x + 0.5, y, z);
-            player.rotationPitch = pitch;
-            player.rotationYaw = yaw;
-
-            // Delete drone from inventory
-            itemStack.shrink(1);
+            player.setPositionAndUpdate(tag.getDouble("x") + 0.5, tag.getDouble("y"), tag.getDouble("z"));
+            player.rotationPitch = tag.getFloat("pitch");
+            player.rotationYaw = tag.getFloat("yaw");
 
             // FPV mod has a bag with eye height and this is fix for it
             scheduler.schedule(() -> {
                 player.setPose(Pose.STANDING);
                 player.recalculateSize();
             }, delay, TimeUnit.MILLISECONDS);
+
+            // Delete drone from inventory
+            itemStack.shrink(1);
         }
     }
 
@@ -101,26 +94,35 @@ public class PlayerEventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        // Get player and world
-        PlayerEntity player = event.player;
-
-        ItemStack itemStack = player.getHeldItemMainhand();
+        // Get player and item stack
+        ItemStack itemStack = event.player.getHeldItemMainhand();
 
         // Get item and check if it's our kamikaze drone in fly mode
         if (itemStack.getItem() instanceof KamikazeDrone) {
             CompoundNBT tag = itemStack.getTag();
             if (tag != null && tag.getBoolean("flying")) {
-                // Get hit box and grow him
-                AxisAlignedBB boundingBox = player.getBoundingBox().grow(0.5D, 0.5D, 0.5D);
-                World world = player.world;
 
-                // Check if player collision with something
-                if (!world.hasNoCollisions(boundingBox)) {
-                    // If we're not collision very slow
-                    Vector3d motion = player.getMotion();
-                    if (motion.length() > 0.5D) {
-                        // Return to player everything
-                        getPlayerBack(player, tag, itemStack, 500, true);
+                // Get hit box and grow him
+                PlayerEntity player = event.player;
+                Vector3d motion = player.getMotion();
+
+                // If we're not collision very slow
+                if (motion.lengthSquared() > 0.1D) {
+
+                    // Get start and end pos
+                    Vector3d startPos = player.getPositionVec();
+                    Vector3d endPos = startPos.add(motion);
+
+                    // Create raytrace for checking collision
+                    World world = player.world;
+                    RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(
+                            startPos, endPos, RayTraceContext.BlockMode.COLLIDER,
+                            RayTraceContext.FluidMode.NONE, player));
+
+                    // Check if there is collision
+                    if (result.getType() == RayTraceResult.Type.BLOCK) {
+                        // There's collision get player back
+                        getPlayerBack(player, tag, itemStack, 250, true);
                     }
                 }
             }
