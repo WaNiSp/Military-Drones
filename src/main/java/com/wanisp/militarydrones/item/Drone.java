@@ -1,6 +1,7 @@
 package com.wanisp.militarydrones.item;
 
 import com.gluecode.fpvdrone.a.b;
+import com.wanisp.militarydrones.event.SlotChangeHandler;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.player.PlayerEntity;
@@ -116,6 +117,10 @@ public class Drone extends Item {
                 }, 250, TimeUnit.MILLISECONDS);
             }
             else {
+                // Unlock slot with drone
+                SlotChangeHandler.setSlotLock(false, -1);
+
+                // Disable drone mode
                 b.v = false;
                 b.d();
             }
@@ -130,6 +135,10 @@ public class Drone extends Item {
             if (!p_77659_1_.isRemote) {
                 changeHealthOnDrone(tag, p_77659_2_);
             } else {
+                // Lock slot with drone
+                SlotChangeHandler.setSlotLock(true, p_77659_2_.inventory.currentItem);
+
+                // enable drone mode
                 b.v = true;
                 b.d();
             }

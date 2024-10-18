@@ -27,5 +27,11 @@ public class PacketHandler {
                 .decoder(DroneOverlayPacket::new)
                 .consumer(DroneOverlayPacket::handle)
                 .add();
+
+        INSTANCE.messageBuilder(SlotLockPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(SlotLockPacket::toBytes)
+                .decoder(SlotLockPacket::new)
+                .consumer(SlotLockPacket::handle)
+                .add();
     }
 }

@@ -1,28 +1,32 @@
 package com.wanisp.militarydrones.packet;
 
-import com.gluecode.fpvdrone.a.b;
+import com.wanisp.militarydrones.event.SlotChangeHandler;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class DroneModePacket {
+public class SlotLockPacket {
 
-    private final boolean activateDrone;
+    private final boolean isSlotLocked;
+    private final int lockedSlot;
 
     // Constructor for creating packet
-    public DroneModePacket(boolean deactivateDrone) {
-        this.activateDrone = deactivateDrone;
+    public SlotLockPacket(boolean lock, int slot) {
+        this.isSlotLocked = lock;
+        this.lockedSlot = slot;
     }
 
     // Constructor for reading data from packet
-    public DroneModePacket(PacketBuffer buffer) {
-        this.activateDrone = buffer.readBoolean();
+    public SlotLockPacket(PacketBuffer buffer) {
+        this.isSlotLocked = buffer.readBoolean();
+        this.lockedSlot = buffer.readInt();
     }
 
     // Method to write data into packet
     public void toBytes(PacketBuffer buffer) {
-        buffer.writeBoolean(activateDrone);
+        buffer.writeBoolean(isSlotLocked);
+        buffer.writeInt(lockedSlot);
     }
 
     // Processing packet on client
@@ -30,8 +34,7 @@ public class DroneModePacket {
         NetworkEvent.Context context = contextSupplier.get();
         context.enqueueWork(() -> {
             // Disable drone mode
-            b.v = activateDrone;
-            b.d();
+            SlotChangeHandler.setSlotLock(isSlotLocked, lockedSlot);
         });
         context.setPacketHandled(true);
     }

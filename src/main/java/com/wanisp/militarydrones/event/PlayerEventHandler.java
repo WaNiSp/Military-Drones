@@ -1,11 +1,10 @@
 package com.wanisp.militarydrones.event;
 
-import com.wanisp.militarydrones.client.DroneOverlayRenderer;
 import com.wanisp.militarydrones.item.Drone;
 import com.wanisp.militarydrones.item.KamikazeDrone;
 import com.wanisp.militarydrones.packet.DroneModePacket;
-import com.wanisp.militarydrones.packet.DroneOverlayPacket;
 import com.wanisp.militarydrones.packet.PacketHandler;
+import com.wanisp.militarydrones.packet.SlotLockPacket;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -36,11 +35,16 @@ public class PlayerEventHandler {
         if(!player.world.isRemote){
 
 
-            // Send packet to player to off drone mode
+            // Send packet to player to off drone mode and unlock slot
             if (player instanceof ServerPlayerEntity) {
                 PacketHandler.INSTANCE.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
                         new DroneModePacket(false)
+                );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
+                        new SlotLockPacket(false, -1)
                 );
             }
 

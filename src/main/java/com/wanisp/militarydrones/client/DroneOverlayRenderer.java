@@ -3,9 +3,12 @@ package com.wanisp.militarydrones.client;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.wanisp.militarydrones.item.KamikazeDrone;
+import com.wanisp.militarydrones.packet.DroneOverlayPacket;
+import com.wanisp.militarydrones.packet.PacketHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
@@ -18,6 +21,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Arrays;
 import java.util.List;
@@ -118,7 +122,13 @@ public class DroneOverlayRenderer {
                 RayTraceContext.FluidMode.NONE, player));
 
         if (result.getType() == RayTraceResult.Type.BLOCK) {
-            activateOverlay();
+            // Send packet to player to off drone mode
+            if (player instanceof ServerPlayerEntity) {
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
+                        new DroneOverlayPacket()
+                );
+            }
         }
     }
 }
