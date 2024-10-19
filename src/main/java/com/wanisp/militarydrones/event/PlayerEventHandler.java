@@ -1,20 +1,20 @@
 package com.wanisp.militarydrones.event;
 
+import com.wanisp.militarydrones.Entity.PowerfulTNTEntity;
 import com.wanisp.militarydrones.item.Drone;
 import com.wanisp.militarydrones.item.KamikazeDrone;
 import com.wanisp.militarydrones.packet.DroneModePacket;
 import com.wanisp.militarydrones.packet.PacketHandler;
 import com.wanisp.militarydrones.packet.SlotLockPacket;
 import net.minecraft.entity.Pose;
-import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
@@ -23,9 +23,11 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
 
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = "militarydrones")
 public class PlayerEventHandler {
@@ -50,7 +52,7 @@ public class PlayerEventHandler {
 
             if(isKamikaze){
                 // Create tnt on collision position
-                TNTEntity tnt = new TNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
+                PowerfulTNTEntity tnt = new PowerfulTNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
                 tnt.setNoGravity(true);
                 tnt.setFuse(7);
                 player.world.addEntity(tnt);
@@ -118,21 +120,16 @@ public class PlayerEventHandler {
         // Get motion and check him
         Vector3d motion = player.getMotion();
 
-        if (motion.lengthSquared() <= 0.1D) {
+        if (motion.lengthSquared() <= 0.25D) {
             return;
         }
 
-        // Ray cast
-        Vector3d startPos = player.getPositionVec();
-        Vector3d endPos = startPos.add(motion);
-
         World world = player.world;
-        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(
-                startPos, endPos, RayTraceContext.BlockMode.COLLIDER,
-                RayTraceContext.FluidMode.NONE, player));
 
-        if (result.getType() == RayTraceResult.Type.BLOCK) {
-            //DroneOverlayRenderer.activateOverlay();
+        AxisAlignedBB boundingBox = player.getBoundingBox().expand(motion.scale(0.5)).grow(0.25D);
+        List<VoxelShape> collisions = world.getBlockCollisionShapes(player, boundingBox).collect(Collectors.toList());
+
+        if (!collisions.isEmpty()) {
             getPlayerBack(player, tag, itemStack, 250, true);
         }
     }
