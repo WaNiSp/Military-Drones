@@ -13,15 +13,14 @@ public class SlotChangeHandler {
     private static int lockedSlot = -1;
 
     public static void setSlotLock(boolean lock, int slot) {
-        lockedSlot = slot;
         isSlotLocked = lock;
+        lockedSlot = slot;
     }
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
         PlayerEntity player = event.player;
 
-        // If there's slot blocking
         if (isSlotLocked && lockedSlot != -1) {
             if (player.inventory.currentItem != lockedSlot) {
                 player.inventory.currentItem = lockedSlot;

@@ -1,11 +1,12 @@
 package com.wanisp.militarydrones.event;
 
-import com.wanisp.militarydrones.Entity.PowerfulTNTEntity;
+import com.gluecode.fpvdrone.Main;
+import com.wanisp.militarydrones.entity.PowerfulTNTEntity;
 import com.wanisp.militarydrones.item.Drone;
-import com.wanisp.militarydrones.item.KamikazeDrone;
-import com.wanisp.militarydrones.packet.DroneModePacket;
+import com.wanisp.militarydrones.item.drones.KamikazeDrone;
 import com.wanisp.militarydrones.packet.PacketHandler;
-import com.wanisp.militarydrones.packet.SlotLockPacket;
+import com.wanisp.militarydrones.packet.droneMode.DroneModeSetPacket;
+import com.wanisp.militarydrones.packet.other.SlotLockPacket;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
@@ -33,50 +34,42 @@ import java.util.stream.Collectors;
 public class PlayerEventHandler {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    private static void getPlayerBack(PlayerEntity player, CompoundNBT tag, ItemStack itemStack, int delay, boolean isKamikaze){
+    private static void getPlayerBack(PlayerEntity player, CompoundNBT tag, ItemStack itemStack, boolean isKamikaze){
         if(!player.world.isRemote){
 
-
-            // Send packet to player to off drone mode and unlock slot
             if (player instanceof ServerPlayerEntity) {
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                        new DroneModePacket(false)
-                );
-
                 PacketHandler.INSTANCE.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
                         new SlotLockPacket(false, -1)
                 );
+
+                PacketHandler.INSTANCE.send(
+                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
+                        new DroneModeSetPacket(false)
+                );
             }
 
             if(isKamikaze){
-                // Create tnt on collision position
                 PowerfulTNTEntity tnt = new PowerfulTNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
                 tnt.setNoGravity(true);
                 tnt.setFuse(7);
                 player.world.addEntity(tnt);
             }
 
-
-            // Give the player resistance so he doesn't die
             player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
 
-            // Return player health
             player.setHealth(tag.getFloat("playerHealth"));
 
-            // Teleport and rotate player
-            player.setPositionAndUpdate(tag.getDouble("x") + 0.5, tag.getDouble("y"), tag.getDouble("z"));
+            Vector3d pos = new Vector3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z"));
+            player.setPositionAndUpdate(pos.x + 0.5, pos.y, pos.z);
             player.rotationPitch = tag.getFloat("pitch");
             player.rotationYaw = tag.getFloat("yaw");
 
-            // FPV mod has a bag with eye height and this is fix for it
             scheduler.schedule(() -> {
                 player.setPose(Pose.STANDING);
                 player.recalculateSize();
-            }, delay, TimeUnit.MILLISECONDS);
+            }, 325, TimeUnit.MILLISECONDS);
 
-            // Delete drone from inventory
             itemStack.shrink(1);
         }
     }
@@ -88,13 +81,9 @@ public class PlayerEventHandler {
             ItemStack itemStack = player.getHeldItemMainhand();
 
             if (itemStack.getItem() instanceof Drone) {
-                CompoundNBT tag = itemStack.getTag();
+                if ((Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
+                    getPlayerBack(player, itemStack.getTag(), itemStack,false);
 
-                if (tag != null && tag.getBoolean("flying")) {
-                    // Return to player everything
-                    getPlayerBack(player, tag, itemStack, 500, false);
-
-                    // Cancel death
                     event.setCanceled(true);
                 }
             }
@@ -103,7 +92,6 @@ public class PlayerEventHandler {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        // Get player and item stack
         PlayerEntity player = event.player;
         ItemStack itemStack = player.getHeldItemMainhand();
 
@@ -111,18 +99,16 @@ public class PlayerEventHandler {
             return;
         }
 
-        // Check tag and are we flying
-        CompoundNBT tag = itemStack.getTag();
-        if (tag == null || !tag.getBoolean("flying")) {
+        if (!(Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
             return;
         }
 
-        // Get motion and check him
         Vector3d motion = player.getMotion();
 
         if (motion.lengthSquared() <= 0.25D) {
             return;
         }
+
 
         World world = player.world;
 
@@ -130,7 +116,7 @@ public class PlayerEventHandler {
         List<VoxelShape> collisions = world.getBlockCollisionShapes(player, boundingBox).collect(Collectors.toList());
 
         if (!collisions.isEmpty()) {
-            getPlayerBack(player, tag, itemStack, 250, true);
+            getPlayerBack(player, itemStack.getTag(), itemStack, true);
         }
     }
 }

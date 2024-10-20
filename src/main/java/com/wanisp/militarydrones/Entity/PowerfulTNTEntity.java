@@ -1,4 +1,4 @@
-package com.wanisp.militarydrones.Entity;
+package com.wanisp.militarydrones.entity;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -19,7 +19,6 @@ public class PowerfulTNTEntity extends TNTEntity {
 
     @Override
     protected void explode() {
-        float explosionPower = 8.0F;
-        this.world.createExplosion(this, this.getPosX(), this.getPosY(), this.getPosZ(), explosionPower, true, Explosion.Mode.BREAK);
+        this.world.createExplosion(this, this.getPosX(), this.getPosY(), this.getPosZ(), 8.0F, true, Explosion.Mode.BREAK);
     }
 }

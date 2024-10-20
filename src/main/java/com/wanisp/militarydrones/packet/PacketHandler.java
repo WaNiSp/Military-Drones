@@ -1,5 +1,10 @@
 package com.wanisp.militarydrones.packet;
 
+import com.wanisp.militarydrones.packet.droneMode.DroneModeOffPacket;
+import com.wanisp.militarydrones.packet.droneMode.DroneModeOnPacket;
+import com.wanisp.militarydrones.packet.droneMode.DroneModeSetPacket;
+import com.wanisp.militarydrones.packet.other.SlotLockPacket;
+import com.wanisp.militarydrones.packet.visual.DroneOverlayPacket;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkRegistry;
@@ -16,11 +21,6 @@ public class PacketHandler {
 
     public static void register() {
         int id = 0;
-        INSTANCE.messageBuilder(DroneModePacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
-                .encoder(DroneModePacket::toBytes)
-                .decoder(DroneModePacket::new)
-                .consumer(DroneModePacket::handle)
-                .add();
 
         INSTANCE.messageBuilder(DroneOverlayPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
                 .encoder(DroneOverlayPacket::toBytes)
@@ -32,6 +32,26 @@ public class PacketHandler {
                 .encoder(SlotLockPacket::toBytes)
                 .decoder(SlotLockPacket::new)
                 .consumer(SlotLockPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(DroneModeSetPacket.class, id++, NetworkDirection.PLAY_TO_CLIENT)
+                .encoder(DroneModeSetPacket::toBytes)
+                .decoder(DroneModeSetPacket::new)
+                .consumer(DroneModeSetPacket::handle)
+                .add();
+
+
+
+        INSTANCE.messageBuilder(DroneModeOffPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(DroneModeOffPacket::toBytes)
+                .decoder(DroneModeOffPacket::new)
+                .consumer(DroneModeOffPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(DroneModeOnPacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(DroneModeOnPacket::toBytes)
+                .decoder(DroneModeOnPacket::new)
+                .consumer(DroneModeOnPacket::handle)
                 .add();
     }
 }

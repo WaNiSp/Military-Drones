@@ -1,22 +1,23 @@
 package com.wanisp.militarydrones.client;
 
+import com.gluecode.fpvdrone.Main;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.wanisp.militarydrones.item.KamikazeDrone;
-import com.wanisp.militarydrones.packet.DroneOverlayPacket;
+import com.wanisp.militarydrones.item.drones.KamikazeDrone;
 import com.wanisp.militarydrones.packet.PacketHandler;
+import com.wanisp.militarydrones.packet.visual.DroneOverlayPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,7 +27,7 @@ import net.minecraftforge.fml.network.PacketDistributor;
 import java.util.Arrays;
 import java.util.List;
 
-@Mod.EventBusSubscriber(value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = "militarydrones")
 public class DroneOverlayRenderer {
 
     private static final List<ResourceLocation> DRONE_OVERLAYS = Arrays.asList(
@@ -46,6 +47,7 @@ public class DroneOverlayRenderer {
     private static int overlayTimer = 0;
     private static final int OVERLAY_DURATION = 60;
 
+    @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onRenderOverlay(RenderGameOverlayEvent.Pre event) {
         if (event.getType() == RenderGameOverlayEvent.ElementType.HELMET) {
@@ -68,20 +70,17 @@ public class DroneOverlayRenderer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-        // Change texture
         if (++tickCounter >= ANIMATION_SPEED) {
             tickCounter = 0;
             frame = (frame + 1) % DRONE_OVERLAYS.size();
         }
 
-        // Get next texture
         mc.getTextureManager().bindTexture(DRONE_OVERLAYS.get(frame));
 
         // Get screen width and height
         int width = mc.getMainWindow().getScaledWidth();
         int height = mc.getMainWindow().getScaledHeight();
 
-        // Render texture on all screen
         AbstractGui.blit(matrixStack, 0, 0, 0, 0, width, height, width, height);
 
         RenderSystem.depthMask(true);
@@ -95,7 +94,6 @@ public class DroneOverlayRenderer {
 
     @SubscribeEvent
     public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-        // Get player and item stack
         PlayerEntity player = event.player;
         ItemStack itemStack = player.getHeldItemMainhand();
 
@@ -103,26 +101,22 @@ public class DroneOverlayRenderer {
             return;
         }
 
-        // Check tag and are we flying
-        CompoundNBT tag = itemStack.getTag();
-        if (tag == null || !tag.getBoolean("flying")) {
+        if (!(Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
             return;
         }
 
-        // Get motion and check him
+
         Vector3d motion = player.getMotion();
-
-        // Ray cast
-        Vector3d startPos = player.getPositionVec();
-        Vector3d endPos = startPos.add(motion.scale(2));
-
         World world = player.world;
-        RayTraceResult result = world.rayTraceBlocks(new RayTraceContext(
-                startPos, endPos, RayTraceContext.BlockMode.COLLIDER,
-                RayTraceContext.FluidMode.NONE, player));
 
-        if (result.getType() == RayTraceResult.Type.BLOCK) {
-            // Send packet to player to off drone mode
+        Vector3d startVec = player.getEyePosition(1.0F);
+        Vector3d endVec = startVec.add(motion.scale(2));
+
+        RayTraceResult rayTraceResult = world.rayTraceBlocks(new RayTraceContext(startVec, endVec,
+                RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player
+        ));
+
+        if (rayTraceResult.getType() == RayTraceResult.Type.BLOCK) {
             if (player instanceof ServerPlayerEntity) {
                 PacketHandler.INSTANCE.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),

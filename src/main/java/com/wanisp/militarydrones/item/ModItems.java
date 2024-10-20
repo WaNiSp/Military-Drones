@@ -1,6 +1,8 @@
 package com.wanisp.militarydrones.item;
 
 import com.wanisp.militarydrones.MilitaryDronesMod;
+import com.wanisp.militarydrones.item.drones.KamikazeDrone;
+import com.wanisp.militarydrones.item.drones.ScoutDrone;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraftforge.eventbus.api.IEventBus;
