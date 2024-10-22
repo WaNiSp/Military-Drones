@@ -1,6 +1,9 @@
 {
   "item.militarydrones.scout_drone": "Scout Drone",
   "item.militarydrones.kamikaze_drone": "Kamikaze Drone",
+  "item.militarydrones.drone_with_grenades": "Drone with Grenades",
   "item.militarydrones.chip": "Chip",
-  "message.militarydrones.drone_distance": "You're too far away"
+  "message.militarydrones.drone_distance": "You're too far away",
+  "key.categories.militarydrones": "Military Drones",
+  "key.militarydrones.drop_grenade": "Drop a Grenade"
 }

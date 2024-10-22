@@ -1,6 +1,7 @@
 package com.wanisp.militarydrones.item;
 
 import com.wanisp.militarydrones.MilitaryDronesMod;
+import com.wanisp.militarydrones.item.drones.DroneWithGrenades;
 import com.wanisp.militarydrones.item.drones.KamikazeDrone;
 import com.wanisp.militarydrones.item.drones.ScoutDrone;
 import net.minecraft.item.Item;
@@ -19,6 +20,9 @@ public class ModItems {
 
     public static final RegistryObject<Item> KAMIKAZE_DRONE = ITEMS.register("kamikaze_drone",
             () -> new KamikazeDrone(new Item.Properties().group(ItemGroup.COMBAT).maxStackSize(1)));
+
+    public static final RegistryObject<Item> DRONE_WITH_GRENADES = ITEMS.register("drone_with_grenades",
+            () -> new DroneWithGrenades(new Item.Properties().group(ItemGroup.COMBAT).maxStackSize(1)));
 
     public static final RegistryObject<Item> CHIP = ITEMS.register("chip",
             () -> new Item(new Item.Properties().group(ItemGroup.COMBAT).maxStackSize(1)));

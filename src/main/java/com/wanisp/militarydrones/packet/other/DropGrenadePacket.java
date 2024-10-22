@@ -1,22 +1,23 @@
-package com.wanisp.militarydrones.packet.droneMode;
+package com.wanisp.militarydrones.packet.other;
 
+import com.gluecode.fpvdrone.Main;
+import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
-public class DroneModeOnPacket {
+public class DropGrenadePacket {
     private final ItemStack itemStack;
 
-    public DroneModeOnPacket(ItemStack itemStack) {
+    public DropGrenadePacket(ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
-    public DroneModeOnPacket(PacketBuffer buffer) {
+    public DropGrenadePacket(PacketBuffer buffer) {
         this.itemStack = buffer.readItemStack();
     }
 
@@ -30,22 +31,23 @@ public class DroneModeOnPacket {
             ServerPlayerEntity player = context.getSender();
 
             if(player != null && itemStack != null) {
+                if (!(Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
+                    return;
+                }
+
                 CompoundNBT tag = itemStack.getTag();
                 assert tag != null;
 
-                tag.putFloat("playerHealth", player.getHealth());
-                player.setHealth(tag.getFloat("droneHealth"));
+                if(tag.getInt("ammunition") >= 1) {
+                    tag.putInt("ammunition", tag.getInt("ammunition") - 1);
 
-                tag.putFloat("pitch", player.rotationPitch);
-                tag.putFloat("yaw", player.rotationYaw);
+                    TNTEntity tnt = new TNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
+                    tnt.setFuse(60);
+                    player.world.addEntity(tnt);
 
-                Vector3d position = player.getPositionVec();
-                tag.putDouble("x", position.x);
-                tag.putDouble("y", position.y);
-                tag.putDouble("z", position.z);
-
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, itemStack);
-                player.inventory.markDirty();
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, itemStack);
+                    player.inventory.markDirty();
+                }
             }
         });
         context.setPacketHandled(true);

@@ -1,6 +1,9 @@
 {
   "item.militarydrones.scout_drone": "Дрон Разведчик",
   "item.militarydrones.kamikaze_drone": "Дрон Камикадзе",
+  "item.militarydrones.drone_with_grenades": "Дрон с гранатами",
   "item.militarydrones.chip": "Чип",
-  "message.militarydrones.drone_distance": "Вы слишком далеко"
+  "message.militarydrones.drone_distance": "Вы слишком далеко",
+  "key.categories.militarydrones": "Военные дроны",
+  "key.militarydrones.drop_grenade": "Сбросить гранату"
 }

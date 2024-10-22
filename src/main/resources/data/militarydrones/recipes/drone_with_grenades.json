@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GTG",
+    "OSO",
+    "GTG"
+  ],
+  "key": {
+    "S": {
+      "item": "militarydrones:chip"
+    },
+    "G": {
+      "item": "minecraft:iron_ingot"
+    },
+    "O": {
+      "item": "minecraft:glass"
+    },
+    "T": {
+      "item": "minecraft:tnt"
+    }
+  },
+  "result": {
+    "item": "militarydrones:drone_with_grenades"
+  }
+}

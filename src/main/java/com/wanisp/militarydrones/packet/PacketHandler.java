@@ -3,6 +3,7 @@ package com.wanisp.militarydrones.packet;
 import com.wanisp.militarydrones.packet.droneMode.DroneModeOffPacket;
 import com.wanisp.militarydrones.packet.droneMode.DroneModeOnPacket;
 import com.wanisp.militarydrones.packet.droneMode.DroneModeSetPacket;
+import com.wanisp.militarydrones.packet.other.DropGrenadePacket;
 import com.wanisp.militarydrones.packet.other.SlotLockPacket;
 import com.wanisp.militarydrones.packet.visual.DroneOverlayPacket;
 import net.minecraft.util.ResourceLocation;
@@ -52,6 +53,12 @@ public class PacketHandler {
                 .encoder(DroneModeOnPacket::toBytes)
                 .decoder(DroneModeOnPacket::new)
                 .consumer(DroneModeOnPacket::handle)
+                .add();
+
+        INSTANCE.messageBuilder(DropGrenadePacket.class, id++, NetworkDirection.PLAY_TO_SERVER)
+                .encoder(DropGrenadePacket::toBytes)
+                .decoder(DropGrenadePacket::new)
+                .consumer(DropGrenadePacket::handle)
                 .add();
     }
 }
