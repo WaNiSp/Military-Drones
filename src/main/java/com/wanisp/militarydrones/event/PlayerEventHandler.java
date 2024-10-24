@@ -1,6 +1,7 @@
 package com.wanisp.militarydrones.event;
 
 import com.gluecode.fpvdrone.Main;
+import com.gluecode.fpvdrone.a.b;
 import com.wanisp.militarydrones.entity.PowerfulTNTEntity;
 import com.wanisp.militarydrones.item.Drone;
 import com.wanisp.militarydrones.item.drones.KamikazeDrone;
@@ -20,6 +21,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
@@ -117,6 +119,24 @@ public class PlayerEventHandler {
 
         if (!collisions.isEmpty()) {
             getPlayerBack(player, itemStack.getTag(), itemStack, true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {
+        if (event.getPlayer() != null && event.getPlayer().world.isRemote) {
+            if (b.q) {
+                event.setCanceled(true);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getPlayer() != null && event.getPlayer().world.isRemote) {
+            if (b.q) {
+                event.setCanceled(true);
+            }
         }
     }
 }

@@ -4,6 +4,8 @@
   "item.militarydrones.drone_with_grenades": "Drone with Grenades",
   "item.militarydrones.chip": "Chip",
   "message.militarydrones.drone_distance": "You're too far away",
+  "message.militarydrones.ammunition": "Гранат: ",
+  "message.militarydrones.not_enough_ammunition": "Недостаточно Гранат",
   "key.categories.militarydrones": "Military Drones",
   "key.militarydrones.drop_grenade": "Drop a Grenade"
 }

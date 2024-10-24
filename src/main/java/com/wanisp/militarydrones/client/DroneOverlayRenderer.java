@@ -1,6 +1,7 @@
 package com.wanisp.militarydrones.client;
 
 import com.gluecode.fpvdrone.Main;
+import com.gluecode.fpvdrone.a.b;
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.wanisp.militarydrones.item.drones.KamikazeDrone;
@@ -39,21 +40,28 @@ public class DroneOverlayRenderer {
             new ResourceLocation("militarydrones", "textures/misc/video_frame_6.png")
     );
 
-    private static final int ANIMATION_SPEED = 8;
+    private static final ResourceLocation DRONE_OVERLAY_TEXTURE =
+            new ResourceLocation("militarydrones", "textures/misc/drone_overlay.png");
+
+    private static final int ANIMATION_SPEED = 4;
     private static int frame = 0;
     private static int tickCounter = 0;
 
     private static boolean overlayVisible = false;
     private static int overlayTimer = 0;
-    private static final int OVERLAY_DURATION = 60;
+    private static final int OVERLAY_DURATION = 40;
 
     @OnlyIn(Dist.CLIENT)
     @SubscribeEvent
     public static void onRenderOverlay(RenderGameOverlayEvent.Pre event) {
         if (event.getType() == RenderGameOverlayEvent.ElementType.HELMET) {
+            if(b.q) {
+                renderDroneViewOverlay(event.getMatrixStack());
+            }
+
             Minecraft mc = Minecraft.getInstance();
             if (mc.player != null && overlayVisible) {
-                renderDroneOverlay(event.getMatrixStack());
+                renderInterferenceOverlay(event.getMatrixStack());
                 overlayTimer--;
 
                 if (overlayTimer <= 0) {
@@ -63,7 +71,25 @@ public class DroneOverlayRenderer {
         }
     }
 
-    private static void renderDroneOverlay(MatrixStack matrixStack) {
+    private static void renderDroneViewOverlay(MatrixStack matrixStack) {
+        Minecraft mc = Minecraft.getInstance();
+        RenderSystem.disableDepthTest();
+        RenderSystem.depthMask(false);
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+
+        mc.getTextureManager().bindTexture(DRONE_OVERLAY_TEXTURE);
+
+        int width = mc.getMainWindow().getScaledWidth();
+        int height = mc.getMainWindow().getScaledHeight();
+
+        AbstractGui.blit(matrixStack, 0, 0, 0, 0, width, height, width, height);
+
+        RenderSystem.depthMask(true);
+        RenderSystem.enableDepthTest();
+    }
+
+    private static void renderInterferenceOverlay(MatrixStack matrixStack) {
         Minecraft mc = Minecraft.getInstance();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
@@ -77,7 +103,6 @@ public class DroneOverlayRenderer {
 
         mc.getTextureManager().bindTexture(DRONE_OVERLAYS.get(frame));
 
-        // Get screen width and height
         int width = mc.getMainWindow().getScaledWidth();
         int height = mc.getMainWindow().getScaledHeight();
 

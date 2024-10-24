@@ -2,7 +2,6 @@ package com.wanisp.militarydrones;
 
 import com.gluecode.fpvdrone.Main;
 import com.gluecode.fpvdrone.a.b;
-import com.wanisp.militarydrones.event.PlayerEventHandler;
 import com.wanisp.militarydrones.item.ModItems;
 import com.wanisp.militarydrones.event.KeyInputEvent;
 import com.wanisp.militarydrones.packet.PacketHandler;

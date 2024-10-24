@@ -1,11 +1,13 @@
 package com.wanisp.militarydrones.packet.other;
 
 import com.gluecode.fpvdrone.Main;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -40,6 +42,7 @@ public class DropGrenadePacket {
 
                 if(tag.getInt("ammunition") >= 1) {
                     tag.putInt("ammunition", tag.getInt("ammunition") - 1);
+                    player.sendStatusMessage(new StringTextComponent(I18n.format("message.militarydrones.ammunition") + tag.getInt("ammunition")), true);
 
                     TNTEntity tnt = new TNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
                     tnt.setFuse(60);
@@ -47,6 +50,9 @@ public class DropGrenadePacket {
 
                     player.inventory.setInventorySlotContents(player.inventory.currentItem, itemStack);
                     player.inventory.markDirty();
+                }
+                else {
+                    player.sendStatusMessage(new StringTextComponent(I18n.format("message.militarydrones.not_enough_ammunition")), true);
                 }
             }
         });
