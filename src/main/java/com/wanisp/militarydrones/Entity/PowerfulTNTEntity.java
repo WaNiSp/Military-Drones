@@ -19,6 +19,6 @@ public class PowerfulTNTEntity extends TNTEntity {
 
     @Override
     protected void explode() {
-        this.world.createExplosion(this, this.getPosX(), this.getPosY(), this.getPosZ(), 8.0F, true, Explosion.Mode.BREAK);
+        this.world.createExplosion(this, this.getPosX(), this.getPosY(), this.getPosZ(), 6.0F, true, Explosion.Mode.BREAK);
     }
 }

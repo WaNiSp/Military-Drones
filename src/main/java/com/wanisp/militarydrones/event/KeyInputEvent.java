@@ -19,20 +19,19 @@ public class KeyInputEvent {
 
     public static void setupKey() {
         dropGrenadeKey = new KeyBinding("key.militarydrones.drop_grenade", GLFW.GLFW_KEY_G, "key.categories.militarydrones");
-
         ClientRegistry.registerKeyBinding(dropGrenadeKey);
     }
 
     @SubscribeEvent
     public static void onKeyInput(TickEvent.ClientTickEvent event) {
         Minecraft mc = Minecraft.getInstance();
+        ClientPlayerEntity player = mc.player;
 
-        if(mc.world == null) {
+        if (mc.world == null || player == null || mc.currentScreen != null) {
             return;
         }
 
         if(dropGrenadeKey.isPressed() && mc.currentScreen == null) {
-            ClientPlayerEntity player = mc.player;
             ItemStack itemStack = player.getHeldItemMainhand();
 
             if(!itemStack.isEmpty() && itemStack.getItem() instanceof DroneWithGrenades) {

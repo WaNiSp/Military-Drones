@@ -36,58 +36,69 @@ import java.util.stream.Collectors;
 public class PlayerEventHandler {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    private static void getPlayerBack(PlayerEntity player, CompoundNBT tag, ItemStack itemStack, boolean isKamikaze){
-        if(!player.world.isRemote){
+    private static void initializePlayerPosition(PlayerEntity player, CompoundNBT tag) {
+        player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
+        Vector3d position = new Vector3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z"));
 
-            if (player instanceof ServerPlayerEntity) {
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                        new SlotLockPacket(false, -1)
-                );
+        player.setPositionAndUpdate(position.x + 0.5, position.y, position.z);
+        player.rotationPitch = tag.getFloat("pitch");
+        player.rotationYaw = tag.getFloat("yaw");
+        player.setHealth(tag.getFloat("playerHealth"));
+    }
 
-                PacketHandler.INSTANCE.send(
-                        PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
-                        new DroneModeSetPacket(false)
-                );
-            }
+    private static void sendPacketsToPlayer(PlayerEntity player) {
+        if (player instanceof ServerPlayerEntity) {
+            ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new SlotLockPacket(false, -1));
+            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new DroneModeSetPacket(false));
+        }
+    }
+
+    private static void deployPowerfulTNT(PlayerEntity player) {
+        PowerfulTNTEntity tnt = new PowerfulTNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
+        tnt.setNoGravity(true);
+        tnt.setFuse(7);
+        player.world.addEntity(tnt);
+    }
+
+    private static void resetPlayerPose(PlayerEntity player) {
+        scheduler.schedule(() -> {
+            player.setPose(Pose.STANDING);
+            player.recalculateSize();
+        }, 325, TimeUnit.MILLISECONDS);
+    }
+
+
+
+    private static void handlePlayerReturn(PlayerEntity player, CompoundNBT tag, ItemStack itemStack, boolean isKamikaze){
+        if(!player.world.isRemote && tag != null){
+
+            sendPacketsToPlayer(player);
 
             if(isKamikaze){
-                PowerfulTNTEntity tnt = new PowerfulTNTEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), player);
-                tnt.setNoGravity(true);
-                tnt.setFuse(7);
-                player.world.addEntity(tnt);
+                deployPowerfulTNT(player);
             }
 
-            player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
+            initializePlayerPosition(player, tag);
 
-            player.setHealth(tag.getFloat("playerHealth"));
-
-            Vector3d pos = new Vector3d(tag.getDouble("x"), tag.getDouble("y"), tag.getDouble("z"));
-            player.setPositionAndUpdate(pos.x + 0.5, pos.y, pos.z);
-            player.rotationPitch = tag.getFloat("pitch");
-            player.rotationYaw = tag.getFloat("yaw");
-
-            scheduler.schedule(() -> {
-                player.setPose(Pose.STANDING);
-                player.recalculateSize();
-            }, 325, TimeUnit.MILLISECONDS);
+            resetPlayerPose(player);
 
             itemStack.shrink(1);
         }
     }
+
+
 
     @SubscribeEvent
     public static void onPlayerDeath(LivingDeathEvent event) {
         if (event.getEntity() instanceof PlayerEntity) {
             PlayerEntity player = (PlayerEntity) event.getEntity();
             ItemStack itemStack = player.getHeldItemMainhand();
+            boolean isDroneActive = Main.entityArmStates.getOrDefault(player.getUniqueID(), false);
 
-            if (itemStack.getItem() instanceof Drone) {
-                if ((Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
-                    getPlayerBack(player, itemStack.getTag(), itemStack,false);
-
-                    event.setCanceled(true);
-                }
+            if (itemStack.getItem() instanceof Drone && isDroneActive) {
+                handlePlayerReturn(player, itemStack.getTag(), itemStack, false);
+                event.setCanceled(true);
             }
         }
     }
@@ -97,30 +108,26 @@ public class PlayerEventHandler {
         PlayerEntity player = event.player;
         ItemStack itemStack = player.getHeldItemMainhand();
 
-        if (itemStack.isEmpty() || !(itemStack.getItem() instanceof KamikazeDrone)) {
-            return;
-        }
-
-        if (!(Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
+        if (!(itemStack.getItem() instanceof KamikazeDrone) || !Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
             return;
         }
 
         Vector3d motion = player.getMotion();
-
         if (motion.lengthSquared() <= 0.25D) {
             return;
         }
 
 
         World world = player.world;
-
         AxisAlignedBB boundingBox = player.getBoundingBox().expand(motion.scale(0.5)).grow(0.25D);
         List<VoxelShape> collisions = world.getBlockCollisionShapes(player, boundingBox).collect(Collectors.toList());
 
         if (!collisions.isEmpty()) {
-            getPlayerBack(player, itemStack.getTag(), itemStack, true);
+            handlePlayerReturn(player, itemStack.getTag(), itemStack, true);
         }
     }
+
+
 
     @SubscribeEvent
     public static void onLeftClickBlock(PlayerInteractEvent.LeftClickBlock event) {

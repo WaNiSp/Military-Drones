@@ -23,7 +23,7 @@ public class Drone extends Item {
         super(p_i48487_1_);
     }
 
-    public boolean checkDistance(Vector3d dronePosition, PlayerEntity player, ItemStack itemStack) {
+    public boolean isWithinMaxDistance(Vector3d dronePosition, PlayerEntity player, ItemStack itemStack) {
         CompoundNBT tag = itemStack.getTag();
         if(tag == null) {
             return false;
@@ -38,48 +38,51 @@ public class Drone extends Item {
         return false;
     }
 
-    private void changeMode(boolean active) {
+
+    private void initializeDroneNBT(ItemStack itemStack, PlayerEntity player) {
+        itemStack.setTag(new CompoundNBT());
+        CompoundNBT tag = itemStack.getOrCreateTag();
+        tag.putFloat("droneHealth", player.getMaxHealth());
+        tag.putFloat("playerHealth", player.getHealth());
+        tag.putFloat("pitch", player.rotationPitch);
+        tag.putFloat("yaw", player.rotationYaw);
+        tag.putDouble("x", player.getPosX());
+        tag.putDouble("y", player.getPosY());
+        tag.putDouble("z", player.getPosZ());
+    }
+
+    private void toggleDroneMode(boolean active) {
         b.q = !active;
         b.v = active;
         b.d();
     }
 
+
+
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-
         ItemStack itemStack = player.getHeldItem(hand);
         player.getCooldownTracker().setCooldown(this, 30);
 
 
         if(!world.isRemote) {
             if (itemStack.getTag() == null) {
-                itemStack.setTag(new CompoundNBT());
-                CompoundNBT tag = itemStack.getOrCreateTag();
-
-                tag.putFloat("droneHealth", player.getMaxHealth());
-                tag.putFloat("playerHealth", player.getHealth());
-
-                tag.putFloat("pitch", player.rotationPitch);
-                tag.putFloat("yaw", player.rotationYaw);
-
-                tag.putDouble("x", player.getPosX());
-                tag.putDouble("y", player.getPosY());
-                tag.putDouble("z", player.getPosZ());
+                initializeDroneNBT(itemStack, player);
             }
         }
         else {
             if(b.q) {
-                if(!checkDistance(player.getPositionVec(), player, itemStack)){
+                if(!isWithinMaxDistance(player.getPositionVec(), player, itemStack)){
                     return super.onItemRightClick(world, player, hand);
                 }
 
                 PacketHandler.INSTANCE.sendToServer(new DroneModeOffPacket(itemStack));
                 SlotChangeHandler.setSlotLock(false, -1);
-                changeMode(false);
+                toggleDroneMode(false);
             } else {
                 PacketHandler.INSTANCE.sendToServer(new DroneModeOnPacket(itemStack));
                 SlotChangeHandler.setSlotLock(true, player.inventory.currentItem);
-                changeMode(true);
+                toggleDroneMode(true);
             }
         }
 

@@ -13,8 +13,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -27,10 +29,11 @@ import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = "militarydrones")
 public class DroneOverlayRenderer {
-
+    
     private static final List<ResourceLocation> DRONE_OVERLAYS = Arrays.asList(
             new ResourceLocation("militarydrones", "textures/misc/video_frame_1.png"),
             new ResourceLocation("militarydrones", "textures/misc/video_frame_2.png"),
@@ -122,26 +125,20 @@ public class DroneOverlayRenderer {
         PlayerEntity player = event.player;
         ItemStack itemStack = player.getHeldItemMainhand();
 
-        if (itemStack.isEmpty() || !(itemStack.getItem() instanceof KamikazeDrone)) {
+        if (!(itemStack.getItem() instanceof KamikazeDrone) || !Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
             return;
         }
-
-        if (!(Boolean) Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
-            return;
-        }
-
 
         Vector3d motion = player.getMotion();
+        if (motion.lengthSquared() <= 0.1D) {
+            return;
+        }
+
         World world = player.world;
+        AxisAlignedBB boundingBox = player.getBoundingBox().expand(motion.scale(2)).grow(0.25D);
+        List<VoxelShape> collisions = world.getBlockCollisionShapes(player, boundingBox).collect(Collectors.toList());
 
-        Vector3d startVec = player.getEyePosition(1.0F);
-        Vector3d endVec = startVec.add(motion.scale(2));
-
-        RayTraceResult rayTraceResult = world.rayTraceBlocks(new RayTraceContext(startVec, endVec,
-                RayTraceContext.BlockMode.COLLIDER, RayTraceContext.FluidMode.NONE, player
-        ));
-
-        if (rayTraceResult.getType() == RayTraceResult.Type.BLOCK) {
+        if (!collisions.isEmpty()) {
             if (player instanceof ServerPlayerEntity) {
                 PacketHandler.INSTANCE.send(
                         PacketDistributor.PLAYER.with(() -> (ServerPlayerEntity) player),
