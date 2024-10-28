@@ -141,18 +141,20 @@ public class PlayerEventHandler {
             return;
         }
 
-        if (player instanceof ServerPlayerEntity) {
-            ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new SlotLockPacket(false, -1));
-            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new DroneModeSetPacket(false));
-        }
+        scheduler.schedule(() -> {
+            if (player instanceof ServerPlayerEntity) {
+                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+                PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new SlotLockPacket(false, -1));
+                PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new DroneModeSetPacket(false));
+            }
 
-        player.removePotionEffect(Effects.INVISIBILITY);
+            player.removePotionEffect(Effects.INVISIBILITY);
+        }, 500, TimeUnit.MILLISECONDS);
 
         scheduler.schedule(() -> {
             player.setPose(Pose.STANDING);
             player.recalculateSize();
-        }, 500, TimeUnit.MILLISECONDS);
+        }, 1500, TimeUnit.MILLISECONDS);
     }
 
 

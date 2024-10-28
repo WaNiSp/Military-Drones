@@ -1,0 +1,14 @@
+{
+  "type": "militarydrones:grenade_drone_reload",
+  "ingredients": [
+    { "item": "minecraft:tnt" },
+    { "item": "minecraft:tnt" },
+    { "tag": "militarydrones:drone_with_grenades" }
+  ],
+  "result": {
+    "item": "militarydrones:drone_with_grenades",
+    "nbt": {
+      "MyModInteger": "increment"
+    }
+  }
+}

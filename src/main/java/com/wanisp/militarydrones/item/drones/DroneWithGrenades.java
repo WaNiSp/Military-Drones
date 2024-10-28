@@ -57,4 +57,13 @@ public class DroneWithGrenades extends Drone {
         }
         super.addInformation(itemStack, world, tooltip, iTooltipFlag);
     }
+
+    public static void addIntegerToItem(ItemStack itemStack, int amount) {
+        CompoundNBT tag = itemStack.getTag();
+        if(tag == null) {
+            return;
+        }
+
+        tag.putInt("ammunition", amount);
+    }
 }

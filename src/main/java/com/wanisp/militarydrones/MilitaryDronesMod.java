@@ -5,8 +5,10 @@ import com.gluecode.fpvdrone.a.b;
 import com.wanisp.militarydrones.item.ModItems;
 import com.wanisp.militarydrones.event.KeyInputEvent;
 import com.wanisp.militarydrones.packet.PacketHandler;
+import com.wanisp.militarydrones.recipes.ModRecipes;
 import net.minecraft.block.Block;
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.item.crafting.IRecipeSerializer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -43,6 +45,9 @@ public class MilitaryDronesMod
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         // Register the doClientStuff method for modloading
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
+
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modEventBus.addGenericListener(IRecipeSerializer.class, ModRecipes::registerRecipes);
 
         // Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
