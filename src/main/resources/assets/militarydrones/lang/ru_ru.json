@@ -4,8 +4,11 @@
   "item.militarydrones.drone_with_grenades": "Дрон с гранатами",
   "item.militarydrones.chip": "Чип",
   "message.militarydrones.drone_distance": "Вы слишком далеко",
-  "message.militarydrones.ammunition": "Grenades: ",
-  "message.militarydrones.not_enough_ammunition": "Not enough Grenades",
+  "message.militarydrones.ammunition": "Гранат: ",
+  "message.militarydrones.not_enough_ammunition": "Недостаточно гранат",
   "key.categories.militarydrones": "Военные дроны",
-  "key.militarydrones.drop_grenade": "Сбросить гранату"
+  "key.militarydrones.drop_grenade": "Сбросить гранату",
+  "tooltip.militarydrones.scout_drone": "Это просто дрон разведчик. Ты можешь только летать на нём",
+  "tooltip.militarydrones.kamikaze_drone": "А это просто дрон камикадзе. Врежься в врага и всё.",
+  "tooltip.militarydrones.drone_with_grenades": "Это дрон с гранатами. Подлети к врагу и нажми G или другую, кнопку, которую ты забиндил"
 }

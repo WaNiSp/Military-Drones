@@ -13,6 +13,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -21,6 +22,7 @@ import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -72,6 +74,8 @@ public class PlayerEventHandler {
 
     private static void handlePlayerReturn(PlayerEntity player, CompoundNBT tag, ItemStack itemStack, boolean isKamikaze){
         if(!player.world.isRemote && tag != null){
+
+            player.removePotionEffect(Effects.INVISIBILITY);
 
             sendPacketsToPlayer(player);
 
@@ -125,6 +129,30 @@ public class PlayerEventHandler {
         if (!collisions.isEmpty()) {
             handlePlayerReturn(player, itemStack.getTag(), itemStack, true);
         }
+    }
+
+
+
+    @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        PlayerEntity player = event.getPlayer();
+
+        if(player.world.isRemote) {
+            return;
+        }
+
+        if (player instanceof ServerPlayerEntity) {
+            ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new SlotLockPacket(false, -1));
+            PacketHandler.INSTANCE.send(PacketDistributor.PLAYER.with(() -> serverPlayer), new DroneModeSetPacket(false));
+        }
+
+        player.removePotionEffect(Effects.INVISIBILITY);
+
+        scheduler.schedule(() -> {
+            player.setPose(Pose.STANDING);
+            player.recalculateSize();
+        }, 500, TimeUnit.MILLISECONDS);
     }
 
 

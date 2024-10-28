@@ -4,6 +4,8 @@ import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.potion.EffectInstance;
+import net.minecraft.potion.Effects;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -32,6 +34,8 @@ public class DroneModeOnPacket {
             if(player != null && itemStack != null) {
                 CompoundNBT tag = itemStack.getTag();
                 assert tag != null;
+
+                player.addPotionEffect(new EffectInstance(Effects.INVISIBILITY, 999999, 0, false, false));
 
                 tag.putFloat("playerHealth", player.getHealth());
                 player.setHealth(tag.getFloat("droneHealth"));

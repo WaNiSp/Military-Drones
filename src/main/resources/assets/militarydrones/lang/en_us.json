@@ -4,8 +4,11 @@
   "item.militarydrones.drone_with_grenades": "Drone with Grenades",
   "item.militarydrones.chip": "Chip",
   "message.militarydrones.drone_distance": "You're too far away",
-  "message.militarydrones.ammunition": "Гранат: ",
-  "message.militarydrones.not_enough_ammunition": "Недостаточно Гранат",
+  "message.militarydrones.ammunition": "Grenades: ",
+  "message.militarydrones.not_enough_ammunition": "Not enough Grenades",
   "key.categories.militarydrones": "Military Drones",
-  "key.militarydrones.drop_grenade": "Drop a Grenade"
+  "key.militarydrones.drop_grenade": "Drop a Grenade",
+  "tooltip.militarydrones.scout_drone": "It's just a scout drone. You can only fly on it.",
+  "tooltip.militarydrones.kamikaze_drone": "And it's just a kamikaze drone. Crash into the enemy and that's it.",
+  "tooltip.militarydrones.drone_with_grenades": "It's a grenade drone. Fly up to the enemy and press G or whatever button you've bound"
 }

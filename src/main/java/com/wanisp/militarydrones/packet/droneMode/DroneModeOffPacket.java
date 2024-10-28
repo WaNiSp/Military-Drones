@@ -41,6 +41,7 @@ public class DroneModeOffPacket {
                 CompoundNBT tag = itemStack.getTag();
                 assert tag != null;
 
+                player.removePotionEffect(Effects.INVISIBILITY);
                 player.addPotionEffect(new EffectInstance(Effects.RESISTANCE, 20, 100, false, false));
 
                 tag.putFloat("droneHealth", player.getHealth());
