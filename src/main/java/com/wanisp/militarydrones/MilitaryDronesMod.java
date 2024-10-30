@@ -2,6 +2,7 @@ package com.wanisp.militarydrones;
 
 import com.gluecode.fpvdrone.Main;
 import com.gluecode.fpvdrone.a.b;
+import com.gluecode.fpvdrone.util.FpvSettingsLoader;
 import com.wanisp.militarydrones.item.ModItems;
 import com.wanisp.militarydrones.event.KeyInputEvent;
 import com.wanisp.militarydrones.packet.PacketHandler;
@@ -62,6 +63,9 @@ public class MilitaryDronesMod
     private void doClientStuff(final FMLClientSetupEvent event) {
         b.a = new KeyBinding("key.fpvdrone.arm", 1000, "key.fpvdrone.category");
         KeyInputEvent.setupKey();
+
+        b.g = true;
+        FpvSettingsLoader.save();
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event)

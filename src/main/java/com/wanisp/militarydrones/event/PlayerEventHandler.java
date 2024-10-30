@@ -123,10 +123,9 @@ public class PlayerEventHandler {
 
 
         World world = player.world;
-        AxisAlignedBB boundingBox = player.getBoundingBox().expand(motion.scale(0.5)).grow(0.25D);
-        List<VoxelShape> collisions = world.getBlockCollisionShapes(player, boundingBox).collect(Collectors.toList());
+        AxisAlignedBB boundingBox = player.getBoundingBox().expand(motion.scale(0.5)).grow(0.3D);
 
-        if (!collisions.isEmpty()) {
+        if (world.getBlockCollisionShapes(player, boundingBox).findAny().isPresent()) {
             handlePlayerReturn(player, itemStack.getTag(), itemStack, true);
         }
     }
