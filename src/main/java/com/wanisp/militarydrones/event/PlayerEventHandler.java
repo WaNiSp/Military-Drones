@@ -13,11 +13,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.potion.Effect;
 import net.minecraft.potion.EffectInstance;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.vector.Vector3d;
 import net.minecraft.world.World;
 import net.minecraftforge.event.TickEvent;
@@ -28,11 +26,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.network.PacketDistributor;
 
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Mod.EventBusSubscriber(modid = "militarydrones")
 public class PlayerEventHandler {
@@ -140,6 +136,11 @@ public class PlayerEventHandler {
             return;
         }
 
+        if(!Main.entityArmStates.getOrDefault(player.getUniqueID(), false)) {
+            return;
+        }
+
+
         scheduler.schedule(() -> {
             if (player instanceof ServerPlayerEntity) {
                 ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
@@ -153,7 +154,7 @@ public class PlayerEventHandler {
         scheduler.schedule(() -> {
             player.setPose(Pose.STANDING);
             player.recalculateSize();
-        }, 1500, TimeUnit.MILLISECONDS);
+        }, 2000, TimeUnit.MILLISECONDS);
     }
 
 
