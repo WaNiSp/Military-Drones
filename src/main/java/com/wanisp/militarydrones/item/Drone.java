@@ -44,8 +44,10 @@ public class Drone extends Item {
         CompoundNBT tag = itemStack.getOrCreateTag();
         tag.putFloat("droneHealth", player.getMaxHealth());
         tag.putFloat("playerHealth", player.getHealth());
+
         tag.putFloat("pitch", player.rotationPitch);
         tag.putFloat("yaw", player.rotationYaw);
+
         tag.putDouble("x", player.getPosX());
         tag.putDouble("y", player.getPosY());
         tag.putDouble("z", player.getPosZ());
